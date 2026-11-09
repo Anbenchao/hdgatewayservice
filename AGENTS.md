@@ -5,7 +5,7 @@
 ## 常用命令
 
 ```bash
-mvn test                # 56 个单元测试（必须全绿才能提交）
+mvn test                # 60 个单元测试（必须全绿才能提交）
 mvn package             # 打包 target/hdgatewayservice-0.0.1.jar（Spring Boot fat jar）
 mvn package -DskipTests # 跳过测试快速打包
 ```
@@ -23,7 +23,7 @@ mvn spring-boot:run                    # 或 java -jar target/hdgatewayservice-0
 ```bash
 curl.exe -s -X POST http://<host>/rest/developer/server/hdgatewayservice/invoke \
   -H "X-Api-Key: <key>" -H "Content-Type: application/json" \
-  -d '{"route":"hdincentiveservice-coupon-check","body":{"customer_id":"<32位domainId>","scene_type":40}}'
+  -d '{"route":"coupon-check","body":{"customer_id":"<32位domainId>","scene_type":40}}'
 ```
 
 ## 架构
@@ -55,7 +55,7 @@ src/main/java/com/huaweicloud/hdgatewayservice/
 
 ## 关键设计（改代码前必读）
 
-- **路由白名单**：`application.yml` 的 `gateway.routes`，路由名 = `{上游服务名}-{接口动作}`（如 `hdincentiveservice-coupon-check`）。路由结构编译期固化（防 SSRF），仅 URL 可用环境变量 `GW_ROUTE_{大写路由名}_URL` 覆盖。改路由名/加路由必须重新构建镜像。
+- **路由白名单**：`application.yml` 的 `gateway.routes`，路由名为小写 kebab-case 的接口动作名（如 `coupon-check`、`growth-order-list`；历史名称不统一带上游服务名前缀）。路由结构编译期固化（防 SSRF），仅 URL 可用环境变量 `GW_ROUTE_{大写路由名}_URL` 覆盖。改路由名/加路由必须重新构建镜像。
 - **API Key**：一个调用方一个 key。来源两处：MySQL `api_key` 表（生产，运维直配，无管理接口）和 `hdgateway.static-api-keys`（local profile）。`allowed_routes` 逗号分隔（空=不限），key 级路由授权，越权返回 403 `HDGW_ROUTE_FORBIDDEN`。
 - **安全红线**：绿区凭证只放环境变量/secret，**绝不进仓库、不进 yml 字面值、不进日志**；调用方透传头按 `hdgateway.caller-header-deny` 黑名单丢弃（防凭证注入）；path 禁止 scheme/路径穿越/控制字符；日志经 Masker 脱敏（PII 键：id_card_number/realname/contact_phone 等已入默认脱敏列表）。
 - **错误模型**：`code`/`message`/`traceId` 三字段，错误码前缀 `HDGW_*`，HTTP 映射集中在 `GlobalExceptionHandler.STATUS_MAP`。新增业务码必须同时登记映射。

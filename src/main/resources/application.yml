@@ -26,7 +26,7 @@ gateway:
   # 路由白名单：蓝区调用方只能通过 route 名访问已配置的绿区上游，天然防 SSRF。
   # url 支持环境变量覆盖；固定路由的 url 即完整接口地址（invoke 时 path 省略）；
   # auth 取值：HIS（4 头 apigw + IAM token）/ APPCODE（华为云 APIG 简单认证）/ NONE（直连）
-  # 以下 5 条对应 hdkitservice 已在调用的绿区接口，url 由部署环境注入实际值
+  # 以下 8 条对应 hdkitservice 已在调用的绿区接口，url 由部署环境注入实际值
   routes:
     - name: coupon-check
       url: "${GW_ROUTE_COUPON_CHECK_URL:}"

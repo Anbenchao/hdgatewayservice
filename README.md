@@ -171,7 +171,7 @@ UPDATE api_key SET enabled = 0 WHERE source = '<调用方标识>';
 ### 构建与测试
 
 ```bash
-mvn test       # 59 个单元测试
+mvn test       # 60 个单元测试
 mvn package    # 打包 target/hdgatewayservice-0.0.1.jar
 ```
 
