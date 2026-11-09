@@ -99,6 +99,36 @@ class RouteRegistryTest {
     }
 
     @Test
+    void growthRoutesRegisteredAndNormalized() {
+        RouteRegistry registry = registryOf(
+                new GatewayRoutesProperties.RouteDef("growth-order-list",
+                        "https://growth.example.com/v1/hdgrowthservice/growth/get-order-list",
+                        "APIG", List.of("POST"), null),
+                new GatewayRoutesProperties.RouteDef("growth-user-list",
+                        "https://growth.example.com/v1/hdgrowthservice/growth/get-user-list",
+                        "APIG", List.of("POST"), null));
+
+        GatewayRoutesProperties.RouteDef order = registry.find("GROWTH-ORDER-LIST");
+        assertEquals("https://growth.example.com/v1/hdgrowthservice/growth/get-order-list", order.url());
+        assertEquals("APIG", RouteRegistry.authOf(order));
+        assertEquals(List.of("POST"), RouteRegistry.methodsOf(order));
+        assertTrue(RouteRegistry.configured(order));
+
+        GatewayRoutesProperties.RouteDef user = registry.find(" Growth-User-List ");
+        assertEquals("APIG", RouteRegistry.authOf(user));
+        assertEquals(List.of("POST"), RouteRegistry.methodsOf(user));
+        assertTrue(RouteRegistry.configured(user));
+    }
+
+    @Test
+    void growthRoutesConfiguredFalseWhenUrlBlank() {
+        assertFalse(RouteRegistry.configured(new GatewayRoutesProperties.RouteDef(
+                "growth-order-list", "", "APIG", List.of("POST"), null)));
+        assertFalse(RouteRegistry.configured(new GatewayRoutesProperties.RouteDef(
+                "growth-user-list", null, "APIG", List.of("POST"), null)));
+    }
+
+    @Test
     void listExposesNameAuthMethodsButNeverUrl() {
         RouteRegistry registry = registryOf(new GatewayRoutesProperties.RouteDef(
                 "his-demo", "https://his.example.com/secret", "HIS", List.of("GET", "POST"), null));

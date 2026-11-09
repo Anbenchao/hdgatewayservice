@@ -52,8 +52,12 @@ kubectl create secret generic hdgw-secrets -n backend \
   --from-literal=GW_ROUTE_HIS_DEMO_URL=<绿区 HIS 上游基址> \
   --from-literal=GW_ROUTE_APIG_DEMO_URL=<华为云 APIG 上游基址> \
   --from-literal=GW_ROUTE_APIG_DEMO_APPCODE=<APIG AppCode> \
+  --from-literal=GW_ROUTE_GROWTH_ORDER_LIST_URL=<成长中心订单列表接口完整地址> \
+  --from-literal=GW_ROUTE_GROWTH_USER_LIST_URL=<成长中心用户列表接口完整地址> \
   --dry-run=client -o yaml | kubectl apply -f -
 ```
+
+> `growth-order-list` / `growth-user-list` 为成长中心 APIG 接口（`auth: APIG`，仅 `x-auth-token`）：URL 必须注入，否则 invoke 返回 `HDGW_ROUTE_NOT_CONFIGURED`；生产 token 由 `GW_HIS_IAM_*` 动态获取，test 环境使用 `GW_HIS_AUTH_TOKEN`。
 
 ## 步骤 2.5：配置调用方 API Key（数据库直配）
 

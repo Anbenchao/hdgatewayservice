@@ -93,7 +93,7 @@ curl -X POST http://<host>:<port>/rest/developer/server/hdgatewayservice/invoke 
 | `APPCODE` | `X-Apig-AppCode` 简单认证（华为云 APIG） | 路由级 `app-code`，回退全局 `GW_APPCODE` |
 | `NONE` | 直连（预置路由自带凭证） | — |
 
-路由在 `application.yml` 的 `gateway.routes` 注册（name 固定、url 用环境变量注入实际绿区地址），新增路由 = 加一条配置。**首版已预置 hdkitservice 正在调用的 5 个绿区接口**：
+路由在 `application.yml` 的 `gateway.routes` 注册（name 固定、url 用环境变量注入实际绿区地址），新增路由 = 加一条配置。**当前已预置 8 条绿区路由**：
 
 | 网关路由 | 对应 hdkitservice 调用 | 认证 | method |
 |----------|------------------------|------|--------|
@@ -103,10 +103,14 @@ curl -X POST http://<host>:<port>/rest/developer/server/hdgatewayservice/invoke 
 | `agreement-query` | 协议查询 `agreementservice/developer/agreement/query` | APIG（x-auth-token） | GET,POST |
 | `agreement-sign` | 协议签署 `agreementservice/developer/agreement/sign` | APIG（x-auth-token） | POST |
 | `realname-developer-info` | 实名信息 `hdaccountservice/realname/get-developer-info` | APIG（x-auth-token） | GET,POST |
+| `growth-order-list` | 成长中心订单列表 `hdgrowthservice/growth/get-order-list` | APIG（x-auth-token） | POST |
+| `growth-user-list` | 成长中心用户列表 `hdgrowthservice/growth/get-user-list` | APIG（x-auth-token） | POST |
 
 > 码道（codearts）/果办（officeace）校验接口**不纳入网关**：需用调用方本人 AK/SK 做 SDK-HMAC-SHA256 签名且 URL 含动态路径，与网关凭证模型冲突，保留在 hdkitservice。
 
-> 这 5 条均为**固定路由**：url 注入完整接口地址，invoke 时 `path` 省略。后续接入新绿区接口 = 加一条路由配置。
+> 以上均为**固定路由**：url 注入完整接口地址，invoke 时 `path` 省略。后续接入新绿区接口 = 加一条路由配置。
+
+> 成长中心两条路由的上游为 APIG，实测未带凭证返回 `APIGW.0301: x-auth-token not found`、`X-Apig-AppCode` 不被接受，故 `auth: APIG`（仅 `x-auth-token`，production 走 `GW_HIS_IAM_*` 动态 token，test 走 `GW_HIS_AUTH_TOKEN`）；url 未注入时 invoke 返回 `HDGW_ROUTE_NOT_CONFIGURED`。
 
 ### 3. 协议场景接口（X-Api-Key 鉴权）
 
@@ -167,7 +171,7 @@ UPDATE api_key SET enabled = 0 WHERE source = '<调用方标识>';
 ### 构建与测试
 
 ```bash
-mvn test       # 53 个单元测试
+mvn test       # 59 个单元测试
 mvn package    # 打包 target/hdgatewayservice-0.0.1.jar
 ```
 
@@ -202,6 +206,8 @@ java -jar target/hdgatewayservice-0.0.1.jar   # 端口 3003
 | `GW_HIS_IAM_ENDPOINT/USERNAME/PASSWORD/DOMAIN_NAME` | 空 | production 下 IAM 动态取 token |
 | `GW_APPCODE` | 空 | APPCODE 路由全局兜底 AppCode |
 | `GW_ROUTE_<NAME>_URL` | 空 | 路由上游基址（环境变量注入） |
+| `GW_ROUTE_GROWTH_ORDER_LIST_URL` | 空 | 成长中心订单列表接口完整地址（APIG） |
+| `GW_ROUTE_GROWTH_USER_LIST_URL` | 空 | 成长中心用户列表接口完整地址（APIG） |
 | `GW_ROUTE_<NAME>_APP_CODE` | 空 | 路由级 AppCode |
 | `DEPLOY_ENV` | `production` | `test` 时 HIS 走静态 token |
 | `GW_CONNECT_TIMEOUT_MS` / `GW_READ_TIMEOUT_MS` | `10000` / `30000` | 上游超时 |

@@ -18,6 +18,14 @@ gateway:
       url: "https://his.example.com/coupon/check"
       auth: HIS
       methods: POST
+    - name: growth-order-list
+      url: "https://growth.example.com/v1/hdgrowthservice/growth/get-order-list"
+      auth: APIG
+      methods: POST
+    - name: growth-user-list
+      url: "https://growth.example.com/v1/hdgrowthservice/growth/get-user-list"
+      auth: APIG
+      methods: POST
 
 hdgateway:
   his:
